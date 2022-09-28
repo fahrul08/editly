@@ -175,39 +175,47 @@ async function linearGradientFrameSource({ width, height, params }) {
 }
 
 async function subtitleFrameSource({ width, height, params }) {
-  const { text, textColor = '#ffffff', backgroundColor = 'rgba(0,0,0,0.3)', fontFamily = defaultFontFamily, delay = 0, speed = 1 } = params;
+  const { text, keywords = [], keywordsColor = '#e3dcb9', textColor = '#ffffff', backgroundColor = 'rgba(0,0,0,0.3)', fontFamily = defaultFontFamily, delay = 0, speed = 1 } = params;
 
   async function onRender(progress, canvas) {
     const easedProgress = easeOutExpo(Math.max(0, Math.min((progress - delay) * speed, 1)));
 
     const min = Math.min(width, height);
     const padding = 0.05 * min;
-
+    
     const textBox = new fabric.Textbox(text, {
       fill: textColor,
-      fontFamily,
+      fontFamily: 'Arial',
+      fontWeight: 'bold',
 
       fontSize: min / 20,
       textAlign: 'left',
       width: width - padding * 2,
       originX: 'center',
       originY: 'bottom',
-      left: (width / 2) + (-1 + easedProgress) * padding,
+      left: ((width / 2) + (-1 + easedProgress) * padding) + 20,
       top: height - padding,
       opacity: easedProgress,
-    });
 
-    const rect = new fabric.Rect({
-      left: 0,
-      width,
-      height: textBox.height + padding * 2,
-      top: height,
-      originY: 'bottom',
-      fill: backgroundColor,
-      opacity: easedProgress,
+      textBackgroundColor: '#00000080',
     });
+    
 
-    canvas.add(rect);
+    for (let i = 0; i < keywords.length; i++) {
+      textBox.setSelectionStyles({fill: keywordsColor}, text.indexOf(keywords[i]), text.indexOf(keywords[i]) + keywords[i].length);
+    }
+
+    // const rect = new fabric.Rect({
+    //   left: 0,
+    //   width,
+    //   height: textBox.height + padding * 2,
+    //   top: height,
+    //   originY: 'bottom',
+    //   fill: backgroundColor,
+    //   opacity: easedProgress,
+    // });
+
+    // canvas.add(rect);
     canvas.add(textBox);
   }
 
