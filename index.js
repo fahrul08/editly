@@ -13,8 +13,10 @@ const { parseConfig } = require('./parseConfig');
 const GlTransitions = require('./glTransitions');
 const Audio = require('./audio');
 const { assertFileValid, checkTransition } = require('./util');
+const events = require('events');
 
 const channels = 4;
+const emitter = new events.EventEmitter();
 
 
 const Editly = async (config = {}) => {
@@ -290,7 +292,10 @@ const Editly = async (config = {}) => {
 
       if (!verbose) {
         const percentDone = Math.floor(100 * (totalFramesWritten / estimatedTotalFrames));
-        if (totalFramesWritten % 10 === 0) process.stdout.write(`${String(percentDone).padStart(3, ' ')}% `);
+        if (totalFramesWritten % 10 === 0) {
+          // process.stdout.write(`${String(percentDone).padStart(3, ' ')}% `)
+          emitter.emit('progress', `${String(percentDone)}%`);
+        };
       }
 
       // console.log({ transitionFrameAt, transitionNumFramesSafe })
@@ -304,6 +309,7 @@ const Editly = async (config = {}) => {
 
         if (!getTransitionFromClip()) {
           console.log('No more transitionFromClip, done');
+          emitter.emit('done', `Done`);
           break;
         }
 
@@ -440,5 +446,8 @@ async function renderSingleFrame({
 }
 
 Editly.renderSingleFrame = renderSingleFrame;
+Editly.on = (evt, cb) => {
+  emitter.on(evt, cb);
+};
 
 module.exports = Editly;
